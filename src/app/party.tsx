@@ -28,7 +28,7 @@ const Test = () => {
 
   const updateMeta = () => {
     /** record meta */
-    const totalDuration = presentationQueue.current.reduce((sum, effect) => sum + effect.duration, 0);
+    const totalDuration = presentationQueue.current.reduce((sum, effect) => sum + (effect.duration ?? 0), 0);
     setPresentationMeta({ duration: totalDuration, queueCount: presentationQueue.current.length });
   }
 
