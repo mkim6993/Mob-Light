@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Dimensions, ScrollView, Text, View } from 'react-native';
 
+import { useDisconnectAll } from '@/hooks/api/useOperator';
 import { usePartyWebSocket } from '@/hooks/useWebSocket';
 import { useRouter } from 'expo-router';
 
@@ -24,8 +25,17 @@ const sampleColors = [
 
 const Dashboard = () => {
   const router = useRouter();
-  const { connected, sendMessage, lastMessage } = usePartyWebSocket(partyOperatorWSURL);
+  const {
+    connect,
+    disconnect,
+    sendMessage,
+    connected,
+    lastMessage
+  } = usePartyWebSocket(partyOperatorWSURL);
   const [messageLog, setMessageLog] = useState<String[]>([]);
+  
+  // React Query mutation hook
+  const disconnectAllMutation = useDisconnectAll();
 
   const sendSomeMessage = () => {
     const randomColor = sampleColors[Math.floor(Math.random() * sampleColors.length)];
@@ -52,6 +62,14 @@ const Dashboard = () => {
       setMessageLog(log => [...log, lastMessage]);
     }
   }, [lastMessage]);
+
+  useEffect(() => {
+    connect();
+
+    return () => {
+      disconnect();
+    }
+  }, []);
 
   return (
     <ScrollView
@@ -88,6 +106,21 @@ const Dashboard = () => {
         title='Send WS message'
         onPress={() => sendSomeMessage()}
       />
+      <Button
+        title='Disconnect All Clients'
+        onPress={() => disconnectAllMutation.mutate()}
+        disabled={disconnectAllMutation.isPending}
+      />
+      {disconnectAllMutation.isSuccess && (
+        <Text style={{ color: 'green', padding: 10 }}>
+          {disconnectAllMutation.data.message}
+        </Text>
+      )}
+      {disconnectAllMutation.isError && (
+        <Text style={{ color: 'red', padding: 10 }}>
+          Error: {disconnectAllMutation.error.message}
+        </Text>
+      )}
       <Button
         title='go back home'
         onPress={() => router.back()}

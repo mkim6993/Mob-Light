@@ -14,7 +14,12 @@ const defPresentationOpacity = 1;
 
 const Test = () => {
   const router = useRouter();
-  const { connected, lastMessage } = usePartyWebSocket(partyWSURL);
+  const {
+    connect,
+    disconnect,
+    connected,
+    lastMessage
+  } = usePartyWebSocket(partyWSURL);
   const [messageLog, setMessageLog] = useState<String[]>([]);
 
   /**
@@ -86,6 +91,18 @@ const Test = () => {
     }
   }, [lastMessage]);
 
+  /**
+   * Start up useEffect
+   */
+  useEffect(() => {
+    connect();
+    
+
+    return () => {
+      disconnect();
+    }
+  }, []);
+
   return (
     <ScrollView
       contentContainerStyle={{
@@ -134,6 +151,14 @@ const Test = () => {
       <Button
         title='log effect queue'
         onPress={() => console.log(presentationQueue.current)}
+      />
+      <Button
+        title='reconnect'
+        onPress={() => connect()}
+      />
+      <Button
+        title='disconnect'
+        onPress={() => disconnect()}
       />
       <View>
         <Text>
